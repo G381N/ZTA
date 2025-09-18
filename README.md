@@ -34,12 +34,12 @@ If you see a version, you're good!
 
 #### Option A: Using Git (Recommended)
 ```bash
-git clone https://github.com/YOUR_USERNAME/zta-behavioral-monitoring.git
-cd zta-behavioral-monitoring
+git clone https://github.com/G381N/ZeroTrustArchitecture-with-AI-Based-Behavioral-Monitoring-and-Dynamic-Trust-Scoring.git
+cd ZeroTrustArchitecture-with-AI-Based-Behavioral-Monitoring-and-Dynamic-Trust-Scoring
 ```
 
 #### Option B: Manual Download
-- Go to the GitHub page
+- Go to the GitHub page: https://github.com/G381N/ZeroTrustArchitecture-with-AI-Based-Behavioral-Monitoring-and-Dynamic-Trust-Scoring
 - Click "Code" > "Download ZIP"
 - Extract the ZIP file
 - Open a terminal in the extracted folder
@@ -149,7 +149,7 @@ python3 main.py
 
 ## 📝 License
 
-This project is licensed under the MIT License. See `LICENSE` for details.
+This project is released under the MIT License. See the `LICENSE` file for full terms and conditions.
 
 ---
 
