@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZTA Dashboard Guide</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .url-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            border-left: 4px solid #4CAF50;
+            margin: 10px 0;
+        }
+        .step {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+        .step-number {
+            background: #4CAF50;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .feature-card {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        .icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        h1 { color: #fff; text-align: center; margin-bottom: 30px; }
+        h2 { color: #FFE082; border-bottom: 2px solid #FFE082; padding-bottom: 10px; }
+        h3 { color: #81C784; }
+        .alert {
+            background: rgba(255, 193, 7, 0.2);
+            border: 1px solid #FFC107;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .success {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid #4CAF50;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        a { color: #81C784; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <h1>🛡️ ZTA Dashboard User Guide</h1>
+    
+    <div class="container">
+        <h2>🚀 Quick Start</h2>
+        
+        <div class="card">
+            <h3>Step-by-Step Launch</h3>
+            
+            <div class="step">
+                <div class="step-number">1</div>
+                <div>
+                    <strong>Open Terminal</strong><br>
+                    Navigate to your ZTA folder
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">2</div>
+                <div>
+                    <strong>Start the System</strong><br>
+                    <div class="url-box">cd /home/gebin/Desktop/ZTA && python3 main.py</div>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">3</div>
+                <div>
+                    <strong>Access Dashboard</strong><br>
+                    Open your browser and go to:
+                    <div class="url-box">http://localhost:8080</div>
+                </div>
+            </div>
+            
+            <div class="success">
+                ✅ <strong>Success!</strong> Your dashboard should now be running and displaying real-time data.
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>🌐 Dashboard URLs</h2>
+        
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="icon">🏠</div>
+                <h3>Main Dashboard</h3>
+                <div class="url-box">http://localhost:8080</div>
+                <p>Primary monitoring interface with all cards</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="icon">📚</div>
+                <h3>API Documentation</h3>
+                <div class="url-box">http://localhost:8080/api/docs</div>
+                <p>Interactive API testing and documentation</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="icon">📊</div>
+                <h3>System Status</h3>
+                <div class="url-box">http://localhost:8080/api/status</div>
+                <p>JSON system health and component status</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="icon">🛡️</div>
+                <h3>Trust Score</h3>
+                <div class="url-box">http://localhost:8080/api/trust</div>
+                <p>Current trust score and risk assessment</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>📱 Dashboard Features</h2>
+        
+        <div class="card">
+            <h3>Real-Time Monitoring Cards</h3>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="icon">⚡</div>
+                    <h4>System Status</h4>
+                    <p>Component health, uptime, performance metrics</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="icon">🎯</div>
+                    <h4>Trust Score</h4>
+                    <p>Dynamic trust level (0-100) with risk assessment</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="icon">🚨</div>
+                    <h4>Anomaly Alerts</h4>
+                    <p>Security threats and unusual behavior detection</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="icon">📈</div>
+                    <h4>Training Progress</h4>
+                    <p>Learning phase status and events processed</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="icon">🔄</div>
+                    <h4>Live Activity</h4>
+                    <p>Real-time system activity and app launches</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="icon">🧠</div>
+                    <h4>Learned Patterns</h4>
+                    <p>Behavioral patterns recognized by the AI</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>🛠️ Management Tools</h2>
+        
+        <div class="card">
+            <h3>Quick Start Script</h3>
+            <p>Use the interactive menu system:</p>
+            <div class="url-box">./quick_start.sh</div>
+            
+            <h4>Available Commands:</h4>
+            <ul>
+                <li><strong>./quick_start.sh start</strong> - Start system in foreground</li>
+                <li><strong>./quick_start.sh background</strong> - Start system in background</li>
+                <li><strong>./quick_start.sh stop</strong> - Stop the system</li>
+                <li><strong>./quick_start.sh status</strong> - Check system status</li>
+                <li><strong>./quick_start.sh dashboard</strong> - Open dashboard in browser</li>
+                <li><strong>./quick_start.sh test</strong> - Test all dashboard cards</li>
+            </ul>
+        </div>
+        
+        <div class="card">
+            <h3>Dashboard Manager</h3>
+            <p>Comprehensive system management:</p>
+            <div class="url-box">python3 dashboard_manager.py</div>
+            
+            <h4>Features:</h4>
+            <ul>
+                <li>✅ Validate all APIs</li>
+                <li>📊 System information and statistics</li>
+                <li>🗑️ Delete learned history (reset training)</li>
+                <li>🛡️ Trust score testing</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>🎯 Training Process</h2>
+        
+        <div class="card">
+            <div class="alert">
+                <strong>📚 Learning Phase (First 2 Days)</strong><br>
+                The system learns your normal behavior patterns. During this time, anomaly detection is disabled while it establishes your baseline.
+            </div>
+            
+            <h3>What the System Learns:</h3>
+            <ul>
+                <li>🕘 Your usual work hours (8 AM - 6 PM by default)</li>
+                <li>💻 Applications you normally use</li>
+                <li>🌐 Network connection patterns</li>
+                <li>⏱️ Session duration habits</li>
+                <li>🔄 Application switching patterns</li>
+            </ul>
+            
+            <div class="success">
+                <strong>🚀 Active Monitoring Phase</strong><br>
+                After training completes, the system activates real-time anomaly detection and dynamic trust scoring.
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>📱 Mobile Access</h2>
+        
+        <div class="card">
+            <h3>Access from Mobile Devices</h3>
+            
+            <div class="step">
+                <div class="step-number">1</div>
+                <div>
+                    <strong>Find your computer's IP address:</strong><br>
+                    <div class="url-box">ip addr show | grep 'inet ' | grep -v '127.0.0.1'</div>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">2</div>
+                <div>
+                    <strong>Access from mobile browser:</strong><br>
+                    <div class="url-box">http://YOUR_IP_ADDRESS:8080</div>
+                </div>
+            </div>
+            
+            <div class="alert">
+                <strong>Note:</strong> Make sure your mobile device is on the same network as your computer.
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>🔧 Troubleshooting</h2>
+        
+        <div class="card">
+            <h3>Common Issues</h3>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="icon">❌</div>
+                    <h4>Dashboard Won't Load</h4>
+                    <p>Check if system is running:</p>
+                    <div class="url-box">curl http://localhost:8080/api/status</div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="icon">🔍</div>
+                    <h4>Test All Features</h4>
+                    <p>Quick health check:</p>
+                    <div class="url-box">python3 test_dashboard_cards.py</div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="icon">🔄</div>
+                    <h4>Reset System</h4>
+                    <p>Delete learned history:</p>
+                    <div class="url-box">python3 dashboard_manager.py</div>
+                    <small>Choose option 3</small>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="icon">📋</div>
+                    <h4>View Logs</h4>
+                    <p>Check system logs:</p>
+                    <div class="url-box">tail -f logs/api.log</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="success">
+            <h2>🎉 Success Indicators</h2>
+            <p>You know your system is working perfectly when:</p>
+            <ul>
+                <li>✅ All dashboard cards show data</li>
+                <li>✅ Trust score updates regularly</li>
+                <li>✅ Anomalies are detected appropriately</li>
+                <li>✅ Training progresses through phases</li>
+                <li>✅ Web dashboard loads instantly</li>
+            </ul>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <h3>🛡️ Your ZTA system is ready for 24/7 monitoring!</h3>
+            </div>
+        </div>
+    </div>
+    
+    <div style="text-align: center; margin-top: 40px; opacity: 0.8;">
+        <small>ZTA Behavioral Monitoring System v1.0 | September 18, 2025</small>
+    </div>
+</body>
+</html>

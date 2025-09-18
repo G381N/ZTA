@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛡️ ZTA Behavioral Monitoring Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#667eea',
+                        'secondary': '#764ba2',
+                        'accent': '#f093fb',
+                        'dark': '#1a202c',
+                        'success': '#10b981',
+                        'warning': '#f59e0b',
+                        'danger': '#ef4444'
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.3s ease-out',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(10px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .card-shadow:hover {
+            box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -2px rgba(0, 0, 0, 0.08);
+        }
+        .anomaly-item {
+            transition: all 0.2s ease;
+        }
+        .anomaly-item:hover {
+            transform: translateX(4px);
+        }
+        .loading-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-2xl">
+        <div class="max-w-7xl mx-auto px-4 py-8">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="bg-white bg-opacity-20 p-3 rounded-full">
+                        <i class="fas fa-shield-alt text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-4xl font-bold tracking-tight">ZTA Monitor</h1>
+                        <p class="text-xl opacity-90">Behavioral Security Dashboard</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-6">
+                    <div class="text-right">
+                        <p class="text-sm opacity-80">Last Updated</p>
+                        <p class="font-semibold" id="last-updated">Loading...</p>
+                    </div>
+                    <button onclick="refreshDashboard()" class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>Refresh</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Status Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Trust Score Card -->
+            <div class="bg-white rounded-2xl p-6 card-shadow hover:scale-105 transition-all duration-300">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-gradient-to-r from-green-400 to-green-600 p-3 rounded-full">
+                        <i class="fas fa-shield-check text-white text-lg"></i>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm text-gray-500">Trust Score</p>
+                        <p class="text-3xl font-bold text-gray-800" id="trust-score">0</p>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-medium" id="risk-level">Loading...</span>
+                    <div class="h-2 bg-gray-200 rounded-full w-20">
+                        <div class="h-2 bg-gradient-to-r from-green-400 to-green-600 rounded-full trust-progress" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Anomalies Card -->
+            <div class="bg-white rounded-2xl p-6 card-shadow hover:scale-105 transition-all duration-300">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-gradient-to-r from-red-400 to-red-600 p-3 rounded-full">
+                        <i class="fas fa-exclamation-triangle text-white text-lg"></i>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm text-gray-500">Anomalies (24h)</p>
+                        <p class="text-3xl font-bold text-gray-800" id="anomaly-count">0</p>
+                    </div>
+                </div>
+                <div class="text-sm text-gray-600">
+                    <span id="model-status">Loading...</span>
+                </div>
+            </div>
+
+            <!-- Active Events Card -->
+            <div class="bg-white rounded-2xl p-6 card-shadow hover:scale-105 transition-all duration-300">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-gradient-to-r from-blue-400 to-blue-600 p-3 rounded-full">
+                        <i class="fas fa-activity text-white text-lg"></i>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm text-gray-500">Active Events</p>
+                        <p class="text-3xl font-bold text-gray-800" id="total-events">0</p>
+                    </div>
+                </div>
+                <div class="flex justify-between text-sm text-gray-600">
+                    <span><i class="fas fa-desktop mr-1"></i><span id="unique-apps">0</span> Apps</span>
+                    <span><i class="fas fa-network-wired mr-1"></i><span id="network-connections">0</span> Net</span>
+                </div>
+            </div>
+
+            <!-- System Status Card -->
+            <div class="bg-white rounded-2xl p-6 card-shadow hover:scale-105 transition-all duration-300">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="bg-gradient-to-r from-purple-400 to-purple-600 p-3 rounded-full">
+                        <i class="fas fa-server text-white text-lg"></i>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm text-gray-500">System Status</p>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                            <span class="text-lg font-semibold text-green-600">Active</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-sm text-gray-600">
+                    <span><i class="fas fa-exclamation-circle mr-1"></i><span id="suspicious-events">0</span> Alerts</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Anomalies Panel -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-2xl card-shadow">
+                    <div class="p-6 border-b border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="bg-gradient-to-r from-red-400 to-red-600 p-2 rounded-lg">
+                                    <i class="fas fa-exclamation-triangle text-white"></i>
+                                </div>
+                                <h2 class="text-2xl font-bold text-gray-800">Security Anomalies</h2>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                                <span class="text-sm text-gray-500">Live Monitoring</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div id="recent-anomalies" class="max-h-96 overflow-y-auto space-y-4">
+                            <div class="flex items-center justify-center py-12">
+                                <div class="text-center">
+                                    <i class="fas fa-spinner fa-spin text-3xl text-gray-400 mb-4"></i>
+                                    <p class="text-gray-500">Loading anomaly data...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Activity Panel -->
+            <div class="space-y-6">
+                <!-- App Launches -->
+                <div class="bg-white rounded-2xl card-shadow">
+                    <div class="p-6 border-b border-gray-200">
+                        <div class="flex items-center space-x-3">
+                            <div class="bg-gradient-to-r from-blue-400 to-blue-600 p-2 rounded-lg">
+                                <i class="fas fa-rocket text-white"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-800">App Launches</h3>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div id="app-launches" class="space-y-3 max-h-48 overflow-y-auto">
+                            <p class="text-sm text-gray-500 text-center py-6">Loading app activity...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Network Activity -->
+                <div class="bg-white rounded-2xl card-shadow">
+                    <div class="p-6 border-b border-gray-200">
+                        <div class="flex items-center space-x-3">
+                            <div class="bg-gradient-to-r from-purple-400 to-purple-600 p-2 rounded-lg">
+                                <i class="fas fa-network-wired text-white"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-800">Network Activity</h3>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div id="network-activity" class="space-y-3 max-h-48 overflow-y-auto">
+                            <p class="text-sm text-gray-500 text-center py-6">Loading network activity...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+            <!-- Trust Score Chart -->
+            <div class="bg-white rounded-2xl card-shadow">
+                <div class="p-6 border-b border-gray-200">
+                    <h3 class="text-xl font-semibold text-gray-800 flex items-center">
+                        <i class="fas fa-chart-line text-primary mr-3"></i>
+                        Trust Score History
+                    </h3>
+                </div>
+                <div class="p-6">
+                    <div id="trust-chart" style="height: 300px;"></div>
+                </div>
+            </div>
+
+            <!-- Anomalies Timeline -->
+            <div class="bg-white rounded-2xl card-shadow">
+                <div class="p-6 border-b border-gray-200">
+                    <h3 class="text-xl font-semibold text-gray-800 flex items-center">
+                        <i class="fas fa-chart-bar text-danger mr-3"></i>
+                        Anomalies Timeline
+                    </h3>
+                </div>
+                <div class="p-6">
+                    <div id="anomalies-chart" style="height: 300px;"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Global variables
+        let refreshInterval;
+        let isLoading = false;
+        let lastRefresh = 0;
+        
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshDashboard();
+            startAutoRefresh();
+        });
+        
+        function startAutoRefresh() {
+            // Refresh every 5 seconds for more live updates
+            refreshInterval = setInterval(refreshDashboard, 5000);
+        }
+        
+        function stopAutoRefresh() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        }
+        
+        async function refreshDashboard() {
+            if (isLoading) return;
+            
+            const now = Date.now();
+            if (now - lastRefresh < 2000) return; // Prevent too frequent calls
+            lastRefresh = now;
+            
+            isLoading = true;
+            
+            try {
+                // Fetch all data in parallel with cache busting
+                const timestamp = new Date().getTime();
+                const [trustResponse, anomaliesResponse, historyResponse, statusResponse, activityResponse] = await Promise.all([
+                    fetch(`/api/trust?_t=${timestamp}`),
+                    fetch(`/api/anomalies?_t=${timestamp}`),
+                    fetch(`/api/trust/history?_t=${timestamp}`),
+                    fetch(`/api/status?_t=${timestamp}`),
+                    fetch(`/api/activity?_t=${timestamp}`)
+                ]);
+                
+                // Check if responses are ok
+                const trustData = trustResponse.ok ? await trustResponse.json() : null;
+                const anomaliesData = anomaliesResponse.ok ? await anomaliesResponse.json() : null;
+                const historyData = historyResponse.ok ? await historyResponse.json() : null;
+                const statusData = statusResponse.ok ? await statusResponse.json() : null;
+                const activityData = activityResponse.ok ? await activityResponse.json() : null;
+                
+                // Update trust score
+                if (trustData && trustData.data) {
+                    updateTrustScore(trustData.data);
+                }
+                
+                // Update recent anomalies
+                if (anomaliesData && anomaliesData.data) {
+                    updateRecentAnomalies(anomaliesData.data.anomalies || []);
+                }
+                
+                // Update charts
+                if (historyData && historyData.data) {
+                    updateTrustChart(historyData.data.history || []);
+                }
+                if (anomaliesData && anomaliesData.data) {
+                    updateAnomaliesChart(anomaliesData.data.anomalies || []);
+                }
+                
+                // Update system status
+                if (statusData && statusData.data) {
+                    updateSystemStatus(statusData.data);
+                }
+                
+                // Update live activity
+                if (activityData && activityData.data) {
+                    updateLiveActivity(activityData.data);
+                }
+                
+                // Update last updated time
+                document.getElementById('last-updated').textContent = new Date().toLocaleString();
+                
+                console.log(`Dashboard refreshed at ${new Date().toLocaleTimeString()}`);
+                
+            } catch (error) {
+                console.error('Error refreshing dashboard:', error);
+                showError('Failed to refresh dashboard data: ' + error.message);
+            } finally {
+                isLoading = false;
+            }
+        }
+        
+        function updateTrustScore(trustData) {
+            const scoreElement = document.getElementById('trust-score');
+            const riskElement = document.getElementById('risk-level');
+            const anomalyCountElement = document.getElementById('anomaly-count');
+            const progressBar = document.querySelector('.trust-progress');
+            
+            // Update trust score with animation
+            const newScore = parseFloat(trustData.current_score || 0).toFixed(1);
+            scoreElement.textContent = newScore;
+            riskElement.textContent = trustData.risk_level || 'Unknown';
+            
+            // Update progress bar
+            const score = parseFloat(newScore);
+            progressBar.style.width = `${score}%`;
+            
+            // Update color based on score
+            scoreElement.className = 'text-3xl font-bold';
+            riskElement.className = 'text-sm font-medium';
+            
+            if (score >= 80) {
+                scoreElement.classList.add('text-green-600');
+                riskElement.classList.add('text-green-600');
+                progressBar.className = 'h-2 bg-gradient-to-r from-green-400 to-green-600 rounded-full trust-progress';
+            } else if (score >= 60) {
+                scoreElement.classList.add('text-yellow-600');
+                riskElement.classList.add('text-yellow-600');
+                progressBar.className = 'h-2 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full trust-progress';
+            } else if (score >= 40) {
+                scoreElement.classList.add('text-orange-600');
+                riskElement.classList.add('text-orange-600');
+                progressBar.className = 'h-2 bg-gradient-to-r from-orange-400 to-orange-600 rounded-full trust-progress';
+            } else {
+                scoreElement.classList.add('text-red-600');
+                riskElement.classList.add('text-red-600');
+                progressBar.className = 'h-2 bg-gradient-to-r from-red-400 to-red-600 rounded-full trust-progress';
+            }
+            
+            // Update anomaly count
+            if (trustData.last_24h && trustData.last_24h.anomaly_count !== undefined) {
+                anomalyCountElement.textContent = trustData.last_24h.anomaly_count;
+            }
+        }
+        
+        function updateRecentAnomalies(anomalies) {
+            const container = document.getElementById('recent-anomalies');
+            if (!anomalies || anomalies.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <i class="fas fa-check-circle text-5xl text-green-400 mb-4"></i>
+                        <h3 class="text-xl font-semibold text-gray-700 mb-2">All Clear!</h3>
+                        <p class="text-gray-500">No recent anomalies detected. System is operating normally.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Group anomalies by type and app
+            const groups = {};
+            anomalies.forEach(anomaly => {
+                const type = anomaly.anomaly_type || 'general_anomaly';
+                const app = anomaly.app_name || 'Unknown';
+                const key = `${type}::${app}`;
+                if (!groups[key]) groups[key] = [];
+                groups[key].push(anomaly);
+            });
+            
+            // Build grouped anomaly list
+            let html = '';
+            Object.entries(groups).forEach(([key, group]) => {
+                const [type, app] = key.split('::');
+                const count = group.length;
+                const maxSeverity = Math.max(...group.map(a => a.severity || 0));
+                const severityColor = maxSeverity > 0.7 ? 'text-red-600' : maxSeverity > 0.4 ? 'text-yellow-600' : 'text-blue-600';
+                
+                html += `
+                    <div class="border border-gray-200 rounded-xl overflow-hidden">
+                        <div class="bg-gray-50 p-4 cursor-pointer hover:bg-gray-100 transition-colors" onclick="toggleGroup(this)">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-3 h-3 ${severityColor === 'text-red-600' ? 'bg-red-400' : severityColor === 'text-yellow-600' ? 'bg-yellow-400' : 'bg-blue-400'} rounded-full"></div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800">${formatAnomalyType(type)}</h4>
+                                        <p class="text-sm text-gray-500">App: ${app}</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-4">
+                                    <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full">${count} events</span>
+                                    <span class="px-2 py-1 ${severityColor === 'text-red-600' ? 'bg-red-100 text-red-800' : severityColor === 'text-yellow-600' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800'} text-xs font-semibold rounded-full">${Math.round(maxSeverity*100)}% severity</span>
+                                    <i class="fas fa-chevron-down text-gray-400 transform transition-transform group-expand"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="hidden p-4 bg-white space-y-3 group-content">
+                `;
+                
+                group.forEach(anomaly => {
+                    html += `
+                        <div class="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+                            <div class="w-2 h-2 bg-gray-400 rounded-full mt-2"></div>
+                            <div class="flex-1">
+                                <p class="text-sm text-gray-700 mb-1">${anomaly.description || 'No description available'}</p>
+                                <div class="flex items-center space-x-4 text-xs text-gray-500">
+                                    <span><i class="fas fa-clock mr-1"></i>${new Date(anomaly.timestamp).toLocaleString()}</span>
+                                    <span><i class="fas fa-fire mr-1"></i>${Math.round((anomaly.severity || 0)*100)}% severity</span>
+                                    ${anomaly.event_type ? `<span><i class="fas fa-tag mr-1"></i>${anomaly.event_type}</span>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div></div>';
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        function toggleGroup(header) {
+            const content = header.nextElementSibling;
+            const icon = header.querySelector('.group-expand');
+            
+            content.classList.toggle('hidden');
+            icon.classList.toggle('rotate-180');
+        }
+        
+        function updateSystemStatus(statusData) {
+            const modelElement = document.getElementById('model-status');
+            
+            if (statusData.model_status && statusData.model_status.is_trained) {
+                modelElement.innerHTML = '<i class="fas fa-check-circle text-green-500 mr-1"></i>Model Trained & Active';
+            } else {
+                modelElement.innerHTML = '<i class="fas fa-exclamation-circle text-yellow-500 mr-1"></i>Model Training...';
+            }
+        }
+        
+        function updateLiveActivity(activityData) {
+            // Update app launches
+            const appContainer = document.getElementById('app-launches');
+            if (activityData.app_launches && activityData.app_launches.length > 0) {
+                appContainer.innerHTML = activityData.app_launches.map(launch => `
+                    <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                        <div class="w-2 h-2 bg-blue-400 rounded-full"></div>
+                        <div class="flex-1">
+                            <p class="font-medium text-sm text-gray-800">${launch.app_name}</p>
+                            <div class="flex items-center space-x-2 text-xs text-gray-500">
+                                <span>${new Date(launch.timestamp).toLocaleTimeString()}</span>
+                                <span class="${launch.trust_impact > 0 ? 'text-green-600' : 'text-red-600'}">
+                                    ${launch.trust_impact > 0 ? '+' : ''}${launch.trust_impact.toFixed(1)}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                appContainer.innerHTML = '<p class="text-sm text-gray-500 text-center py-6">No recent app launches</p>';
+            }
+            
+            // Update network activity
+            const networkContainer = document.getElementById('network-activity');
+            if (activityData.network_activity && activityData.network_activity.length > 0) {
+                networkContainer.innerHTML = activityData.network_activity.map(network => `
+                    <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                        <div class="w-2 h-2 bg-purple-400 rounded-full"></div>
+                        <div class="flex-1">
+                            <p class="font-medium text-sm text-gray-800">${network.event_type.replace(/_/g, ' ').toUpperCase()}</p>
+                            <div class="flex items-center space-x-2 text-xs text-gray-500">
+                                <span>${new Date(network.timestamp).toLocaleTimeString()}</span>
+                                ${network.connections_count ? `<span>${network.connections_count} connections</span>` : ''}
+                                <span class="${network.trust_impact > 0 ? 'text-green-600' : 'text-red-600'}">
+                                    ${network.trust_impact > 0 ? '+' : ''}${network.trust_impact.toFixed(1)}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                networkContainer.innerHTML = '<p class="text-sm text-gray-500 text-center py-6">No recent network activity</p>';
+            }
+            
+            // Update activity stats
+            const stats = activityData.activity_stats;
+            if (stats) {
+                document.getElementById('total-events').textContent = stats.total_events || 0;
+                document.getElementById('unique-apps').textContent = stats.unique_apps || 0;
+                document.getElementById('network-connections').textContent = stats.network_connections || 0;
+                document.getElementById('suspicious-events').textContent = stats.suspicious_events || 0;
+            }
+        }
+        
+        function updateTrustChart(history) {
+            if (!history || history.length === 0) {
+                document.getElementById('trust-chart').innerHTML = '<div class="flex items-center justify-center h-full"><p class="text-gray-500">📈 Collecting trust score data...</p></div>';
+                return;
+            }
+            
+            const timestamps = history.map(h => new Date(h.timestamp));
+            const scores = history.map(h => parseFloat(h.score || 0));
+            
+            const trace = {
+                x: timestamps,
+                y: scores,
+                type: 'scatter',
+                mode: 'lines+markers',
+                name: 'Trust Score',
+                line: {
+                    color: '#667eea',
+                    width: 3
+                },
+                marker: {
+                    color: '#764ba2',
+                    size: 6
+                },
+                hovertemplate: '<b>Trust Score</b><br>Time: %{x}<br>Score: %{y:.1f}<extra></extra>'
+            };
+            
+            const layout = {
+                title: '',
+                xaxis: {
+                    title: 'Time',
+                    type: 'date',
+                    showgrid: true,
+                    gridcolor: '#f0f0f0'
+                },
+                yaxis: {
+                    title: 'Trust Score',
+                    range: [0, 100],
+                    tickformat: '.1f',
+                    showgrid: true,
+                    gridcolor: '#f0f0f0'
+                },
+                margin: { t: 20, r: 20, b: 40, l: 40 },
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                font: { family: 'ui-sans-serif, system-ui, sans-serif' }
+            };
+            
+            Plotly.newPlot('trust-chart', [trace], layout, {responsive: true});
+        }
+        
+        function updateAnomaliesChart(anomalies) {
+            if (!anomalies || anomalies.length === 0) {
+                document.getElementById('anomalies-chart').innerHTML = '<div class="flex items-center justify-center h-full"><p class="text-gray-500">📊 No anomalies to display - system is stable!</p></div>';
+                return;
+            }
+            
+            // Group anomalies by hour for better visualization
+            const anomaliesByHour = {};
+            anomalies.forEach(anomaly => {
+                const hour = new Date(anomaly.timestamp).toISOString().slice(0, 13) + ':00:00.000Z';
+                if (!anomaliesByHour[hour]) {
+                    anomaliesByHour[hour] = [];
+                }
+                anomaliesByHour[hour].push(anomaly);
+            });
+            
+            const timestamps = Object.keys(anomaliesByHour).map(h => new Date(h));
+            const counts = Object.values(anomaliesByHour).map(arr => arr.length);
+            
+            const trace = {
+                x: timestamps,
+                y: counts,
+                type: 'bar',
+                name: 'Anomalies per Hour',
+                marker: {
+                    color: counts.map(count => count > 10 ? '#ef4444' : count > 5 ? '#f59e0b' : '#10b981'),
+                    opacity: 0.8
+                },
+                hovertemplate: '<b>Anomalies</b><br>Hour: %{x}<br>Count: %{y}<extra></extra>'
+            };
+            
+            const layout = {
+                title: '',
+                xaxis: {
+                    title: 'Time',
+                    type: 'date',
+                    showgrid: true,
+                    gridcolor: '#f0f0f0'
+                },
+                yaxis: {
+                    title: 'Anomaly Count',
+                    tickformat: '.0f',
+                    showgrid: true,
+                    gridcolor: '#f0f0f0'
+                },
+                margin: { t: 20, r: 20, b: 40, l: 40 },
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                font: { family: 'ui-sans-serif, system-ui, sans-serif' }
+            };
+            
+            Plotly.newPlot('anomalies-chart', [trace], layout, {responsive: true});
+        }
+        
+        function formatAnomalyType(type) {
+            const typeMap = {
+                'unusual_time': '🕐 Unusual Time Activity',
+                'unknown_application': '❓ Unknown Application',
+                'rapid_switching': '⚡ Rapid App Switching',
+                'weekend_work': '📅 Weekend Activity',
+                'suspicious_pattern': '🚨 Suspicious Pattern',
+                'connection_flooding': '🌊 Network Flooding',
+                'network_connection': '🔗 Network Activity',
+                'network_anomaly': '🌐 Network Anomaly',
+                'security_tool': '🔒 Security Tool Detected',
+                'app_launch': '🚀 App Launch',
+                'general_anomaly': '⚠️ General Anomaly'
+            };
+            
+            return typeMap[type] || `⚠️ ${type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`;
+        }
+        
+        function showError(message) {
+            console.error(message);
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg z-50 max-w-md';
+            errorDiv.innerHTML = `
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-auto">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(errorDiv);
+            
+            setTimeout(() => {
+                if (errorDiv.parentNode) {
+                    errorDiv.parentNode.removeChild(errorDiv);
+                }
+            }, 5000);
+        }
+        
+        // Handle page visibility changes for better performance
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                stopAutoRefresh();
+            } else {
+                refreshDashboard();
+                startAutoRefresh();
+            }
+        });
+    </script>
+</body>
+</html>
