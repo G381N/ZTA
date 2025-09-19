@@ -155,4 +155,4 @@ This project is released under the MIT License. See the `LICENSE` file for full 
 
 ## 🎉 You're Ready!
 
-Enjoy your new AI-powered behavioral monitoring dashboard!
+Enjoy your new AI-powered behavioral monitoring dashboard! this system was made by Gebin George for research on zero trust architecture with AI based behaviour monitoring, and dynamic trust scoring
